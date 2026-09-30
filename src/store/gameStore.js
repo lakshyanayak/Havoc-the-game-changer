@@ -930,6 +930,8 @@ export const useGameStore = create(
           customMissions: [],
 
           customEarnedToday: 0,
+          unlockedCompanionThemes: [],
+          equippedCompanionTheme: null,
         }),
     }),
 
