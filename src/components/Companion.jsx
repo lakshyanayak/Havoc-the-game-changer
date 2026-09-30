@@ -1,6 +1,6 @@
 import { motion, useAnimation } from 'framer-motion';
-import { useEffect , useState} from 'react';
-
+import { useEffect, useState } from 'react';
+import { getMoodFromWellbeing, useGameStore } from '../store/gameStore';
 const earAngles = {
   thriving: 8,
   content: 28,
@@ -49,14 +49,6 @@ const messages = {
     'Night.': ["Please take care of me soon.", "Critical levels, please advise.", "I need a serious reset.", "Tonight was rough. Tomorrow, please be kind.", "Emergency nap required."],
   },
 };
-
-function getMoodState(score) {
-  if (score >= 90) return 'thriving';
-  if (score >= 60) return 'content';
-  if (score >= 40) return 'neutral';
-  if (score >= 20) return 'low';
-  return 'critical';
-}
 
 function getTimeofDay()
 {
@@ -120,7 +112,9 @@ function Eyes({ mood }) {
 }
 
 function Companion({ score }) {
-  const mood = getMoodState(score);
+  const playerName = useGameStore((state) => state.playerName);
+  const loginCount = useGameStore((state) => state.loginCount) || 0;
+  const mood = getMoodFromWellbeing(score).toLowerCase();
   const earAngle = earAngles[mood];
   const legAngle = legAngles[mood];
   const timeOfDay = getTimeofDay();
@@ -138,10 +132,16 @@ function Companion({ score }) {
   }, [earAngle, leftEarControls, rightEarControls]);
 
   const [showMessage, setShowMessage] = useState(true);
+  const greetingLoginKey = 'havoc-companion-greeting-login-count';
+  const loginGreeting = loginCount > 0 && Number(localStorage.getItem(greetingLoginKey)) !== loginCount;
   useEffect(() => {
+    if (loginGreeting) localStorage.setItem(greetingLoginKey, String(loginCount));
     const timer = setTimeout(() => setShowMessage(false), 4000);
-    return() => clearTimeout(timer);
-  }, []);
+    return () => clearTimeout(timer);
+  }, [loginGreeting, loginCount]);
+  const displayedMessage = loginGreeting
+    ? `Welcome back, ${playerName?.trim() || 'player'}. Systems stable.`
+    : message;
 
   function handleTouch(zone) {
     if (mood === 'low' || mood === 'critical') {
@@ -241,7 +241,7 @@ function Companion({ score }) {
           pointerEvents: 'none',
           zIndex: 20
         }}>
-          {message}
+          {displayedMessage}
         </div>
       )}
     </div>

@@ -29,6 +29,9 @@ function ManualTargetInput({ mission, effectiveTarget, onSetTarget }) {
 
 function MissionsScreen() {
   const missionProgress = useGameStore((state) => state.missionProgress)
+  const logout = useGameStore((state) => state.logout)
+  const companionName = useGameStore((state) => state.companionName || 'Companion')
+  const setCompanionName = useGameStore((state) => state.setCompanionName)
   const incrementMission = useGameStore((state) => state.incrementMission)
   const currencies = useGameStore((state) => state.currencies)
   const getWellbeing = useGameStore((state) => state.getWellbeing)
@@ -48,6 +51,7 @@ function MissionsScreen() {
   useDaySync()
 
   const [showAddForm, setShowAddForm] = useState(false)
+  const [showSettings, setShowSettings] = useState(false)
   const [toast, setToast] = useState(null)
   const [toastType, setToastType] = useState('reward') // 'reward' or 'warning'
   const lastClickTimeRef = useRef({})
@@ -129,6 +133,44 @@ function MissionsScreen() {
           </div>
         </div>
       )}
+
+      <div className="relative mx-auto mb-3 flex max-w-md justify-end">
+        <button
+          type="button"
+          aria-label="Settings"
+          aria-expanded={showSettings}
+          aria-controls="missions-settings-menu"
+          onClick={() => setShowSettings((isOpen) => !isOpen)}
+          className="flex h-9 w-9 items-center justify-center border border-white/15 bg-white/5 text-lg text-gray-300 transition-colors hover:border-cyan-400/50 hover:text-cyan-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-300"
+        >
+          ⚙
+        </button>
+        {showSettings && (
+          <div
+            id="missions-settings-menu"
+            className="absolute right-0 top-10 z-30 min-w-48 border border-white/15 bg-[#11111d] p-2 shadow-lg"
+          >
+            <label className="block px-2 py-1">
+              <span className="text-[10px] uppercase tracking-widest text-gray-400">Companion name</span>
+              <input
+                type="text"
+                value={companionName}
+                onChange={(event) => setCompanionName(event.target.value)}
+                maxLength={18}
+                aria-label="Companion name"
+                className="mt-1 w-full border border-white/15 bg-black/50 px-2 py-1.5 text-sm text-white outline-none focus:border-cyan-300"
+              />
+            </label>
+            <button
+              type="button"
+              onClick={logout}
+              className="w-full px-3 py-2 text-left text-sm text-gray-200 transition-colors hover:bg-white/10 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-300"
+            >
+              Log out
+            </button>
+          </div>
+        )}
+      </div>
 
       {/* Wellbeing */}
       <div className="max-w-md mx-auto mb-5">
