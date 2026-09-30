@@ -47,14 +47,12 @@ export const useGameStore = create(
         cells: 0,
         shards: 0,
       },
-
-      // Custom currencies created by missions
-      // are automatically added here.
-
-      // --------------------------------------------------
-      // Trading Centre inventory
-      // --------------------------------------------------
-
+      playerName: null,
+      companionName: 'Companion',
+      loginCount: 0,
+      ownedThemes: ['default'],
+      equippedTheme: 'default',
+      marketCredits: 1000,
       marketInventory: [],
 
       // --------------------------------------------------
@@ -129,6 +127,10 @@ export const useGameStore = create(
           ...get().customMissions,
         ]
       },
+      setPlayerName: (name) =>
+        set((state) => ({ playerName: name, loginCount: (state.loginCount || 0) + 1 })),
+      setCompanionName: (name) => set({ companionName: name }),
+      logout: () => set({ playerName: null }),
 
       // ==================================================
       // DAY ROLLOVER
@@ -356,94 +358,44 @@ export const useGameStore = create(
         return purchased
       },
 
-      // ==================================================
-      // TRADING CENTRE
-      // ==================================================
-
-      purchaseMarketItem: (item) => {
+      buyTheme: (theme) => {
         let purchased = false
 
         set((state) => {
-          // Supports:
-          //
-          // Old item:
-          // {
-          //   price: 50,
-          //   currency: 'shards'
-          // }
-          //
-          // Mixed item:
-          // {
-          //   cost: {
-          //     shards: 30,
-          //     cells: 20
-          //   }
-          // }
+          const ownedThemes = state.ownedThemes || ['default']
+          if (ownedThemes.includes(theme.id)) return state
 
-          const cost =
-            item.cost ||
-            {
-              [item.currency ||
-                'shards']:
-                item.price,
-            }
-
-          // Check every required currency
-          const canAfford =
-            Object.entries(cost).every(
-              ([currency, amount]) => {
-                const balance =
-                  state.currencies?.[
-                    currency
-                  ] || 0
-
-                return balance >= amount
-              }
-            )
-
-          if (!canAfford) {
-            return state
-          }
-
-          const updatedCurrencies = {
-            ...state.currencies,
-          }
-
-          // Deduct all currencies
-          Object.entries(cost).forEach(
-            ([currency, amount]) => {
-              updatedCurrencies[currency] =
-                (updatedCurrencies[
-                  currency
-                ] || 0) - amount
-            }
+          const cost = Object.entries(theme.cost || {})
+          const canAfford = cost.every(
+            ([currency, amount]) => (state.currencies[currency] || 0) >= amount
           )
+          if (!canAfford) return state
 
           purchased = true
-
           return {
-            currencies:
-              updatedCurrencies,
-
-            marketInventory: [
-              ...(state.marketInventory ||
-                []),
-              item,
-            ],
+            ownedThemes: [...ownedThemes, theme.id],
+            currencies: cost.reduce(
+              (currencies, [currency, amount]) => ({
+                ...currencies,
+                [currency]: currencies[currency] - amount,
+              }),
+              { ...state.currencies }
+            ),
           }
         })
 
         return purchased
       },
+      equipTheme: (themeId) =>
+        set((state) =>
+          (state.ownedThemes || ['default']).includes(themeId)
+            ? { equippedTheme: themeId }
+            : state
+        ),
 
-      // ==================================================
-      // MISSION REWARDS
-      // ==================================================
-
-      payReward: (
-        missionId,
-        reward
-      ) => {
+      // Pays a mission's reward. Custom missions are capped; built-in ones are not.
+      // Returns the amount actually paid (can be 0 if the daily cap is used up).
+      payReward: (missionId, reward) => {
         const state = get()
 
         const isCustom =
@@ -915,10 +867,17 @@ export const useGameStore = create(
 
       resetGame: () =>
         set({
-          currencies: {
-            coolant: 0,
-            cells: 0,
-            shards: 0,
+
+
+          currencies: { coolant: 0, cells: 0, shards: 0 },
+          ownedThemes: ['default'],
+          equippedTheme: 'default',
+          marketCredits: 1000,
+          marketInventory: [],
+          missionProgress: {
+            water: { current: 0, completed: false },
+            exercise: { current: 0, completed: false },
+            sleep: { current: 0, completed: false },
           },
 
           marketInventory: [],

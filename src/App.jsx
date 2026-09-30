@@ -4,6 +4,8 @@ import MissionsScreen from './screens/MissionsScreen'
 import CompanionScreen from './screens/CompanionScreen'
 import ShelterScreen from './screens/ShelterScreen'
 import { useDaySync } from './utils/useDaySync'
+import LoginScreen from './screens/login_page'
+import { useGameStore } from './store/gameStore'
 
 const tabs = [
   { id: 'shelter', label: 'Shelter', icon: '🏚️' },
@@ -14,25 +16,37 @@ const tabs = [
 
 function App() {
   const [activeTab, setActiveTab] = useState('missions')
-
+  const [showCompanion, setShowCompanion] = useState(false)
+  const playerName = useGameStore((state) => state.playerName)
+  const companionName = useGameStore((state) => state.companionName?.trim() || 'Companion')
   // Runs the new-day check on every tab, not just Missions
   useDaySync()
+
+  if (!playerName) {
+    return <LoginScreen />;
+  }
 
   return (
     <div className="min-h-screen bg-black">
       <div className="relative">
         {activeTab === 'shelter' && <ShelterScreen />}
-        {activeTab === 'companion' && <CompanionScreen />}
         {activeTab === 'missions' && <MissionsScreen />}
         {activeTab === 'trading' && <TradingScreen />}
+        {showCompanion && <CompanionScreen />}
 
         <nav className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md z-40 flex bg-black/85 backdrop-blur border-t border-white/10">
           {tabs.map((tab) => {
-            const active = activeTab === tab.id
+            const isCompanionTab = tab.id === 'companion'
+            const active = isCompanionTab ? showCompanion : activeTab === tab.id
             return (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
+                type="button"
+                aria-pressed={active}
+                onClick={() => {
+                  if (isCompanionTab) setShowCompanion((visible) => !visible)
+                  else setActiveTab(tab.id)
+                }}
                 className={`flex-1 py-2.5 flex flex-col items-center gap-0.5 text-xs font-medium transition-colors ${
                   active ? 'text-cyan-300' : 'text-gray-500 hover:text-gray-300'
                 }`}
@@ -44,7 +58,9 @@ function App() {
                 >
                   {tab.icon}
                 </span>
-                {tab.label}
+                <span className="max-w-full truncate px-1">
+                  {isCompanionTab ? companionName : tab.label}
+                </span>
               </button>
             )
           })}
