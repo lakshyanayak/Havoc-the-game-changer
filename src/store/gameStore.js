@@ -65,6 +65,10 @@ export const useGameStore = create(
       customMissions: [],
       customEarnedToday: 0,
 
+      // Companion cosmetics, bought and equipped from the Trading Center
+      unlockedCompanionThemes: [],
+      equippedCompanionTheme: null,
+
       // ---------- MISSION LISTS ----------
       getAllMissions: () => {
         return [...builtInMissions, ...get().customMissions]
@@ -158,6 +162,18 @@ export const useGameStore = create(
         if (amount > 0) state.addCurrency(reward.currency, amount)
         return amount
       },
+
+      // ---------- COMPANION THEMES ----------
+      // Called by the Trading Center when a theme is purchased.
+      unlockCompanionTheme: (theme) =>
+        set((state) => ({
+          unlockedCompanionThemes: state.unlockedCompanionThemes.includes(theme)
+            ? state.unlockedCompanionThemes
+            : [...state.unlockedCompanionThemes, theme],
+        })),
+
+      // Called when the player equips an owned theme. Pass null to go back to plain.
+      setCompanionTheme: (theme) => set({ equippedCompanionTheme: theme }),
 
       // ---------- CUSTOM TARGETS / MISSIONS ----------
       setCustomTarget: (missionId, value) =>
@@ -349,6 +365,8 @@ export const useGameStore = create(
           customTargets: {},
           customMissions: [],
           customEarnedToday: 0,
+          unlockedCompanionThemes: [],
+          equippedCompanionTheme: null,
         }),
     }),
     { name: 'havoc-game-storage' }
