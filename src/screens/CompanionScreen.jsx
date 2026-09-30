@@ -5,6 +5,8 @@ import { useGameStore, getMoodFromWellbeing } from '../store/gameStore'
 import { SHELTER_BY_MOOD } from '../utils/shelterMood'
 function CompanionScreen() {
   const wellbeing = useGameStore((state) => state.getWellbeing())
+  const mood = getMoodFromWellbeing(wellbeing)
+  const shelter = SHELTER_BY_MOOD[mood]
   const companionName = useGameStore((state) => state.companionName || 'Companion')
   const areaRef = useRef(null)
   const [theme, setTheme] = useState('normal')

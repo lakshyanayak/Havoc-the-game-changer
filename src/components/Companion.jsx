@@ -1,5 +1,8 @@
 import { motion, useAnimation } from 'framer-motion';
-import { useEffect , useState, forwardRef, useImperativeHandle} from 'react';
+import { useEffect , useMemo, useState, forwardRef, useImperativeHandle} from 'react';
+import { useGameStore } from '../store/gameStore';
+
+const greetingLoginKey = 'havoc-greeted-login-count';
 
 const earAngles = {
   thriving: 8,
@@ -167,6 +170,12 @@ function PetEyes() {
   );
 }
 const Companion = forwardRef(function Companion ({ score,theme='normal'},ref) {
+  const playerName = useGameStore((state) => state.playerName);
+  const loginCount = useGameStore((state) => state.loginCount);
+  const loginGreeting = useMemo(
+    () => Boolean(playerName) && localStorage.getItem(greetingLoginKey) !== String(loginCount),
+    [playerName, loginCount],
+  );
   const c = themes[theme] || themes.normal;
   const mood = getMoodState(score);
   const earAngle = earAngles[mood];
@@ -219,7 +228,6 @@ const Companion = forwardRef(function Companion ({ score,theme='normal'},ref) {
     }
   }
   function handlePull(side) {
-    if (mood === 'low' || mood === 'critical') return;
     setReaction('annoyed');
     legControls.start({ y: [0, 14, 0], transition: { duration: 0.5 } });
     setTimeout(() => setReaction(null), 1200);
@@ -235,6 +243,7 @@ const Companion = forwardRef(function Companion ({ score,theme='normal'},ref) {
     <div style={{ position: 'relative', width: 140, height: 160 }}>
       <motion.div animate={legControls}
       drag="y"
+      dragSnapToOrigin
       dragConstraints={{ top: 0, bottom: 25 }}
       dragElastic={0.4}
       onDragEnd={(e, info) => {if (info.offset.y>15) handlePull('left');}}
@@ -244,6 +253,7 @@ const Companion = forwardRef(function Companion ({ score,theme='normal'},ref) {
       </motion.div>
       <motion.div animate={legControls}
       drag="y"
+      dragSnapToOrigin
       dragConstraints={{ top: 0, bottom: 25 }}
       dragElastic={0.4}
       onDragEnd={(e, info) => {if (info.offset.y>15) handlePull('right');}}
@@ -253,6 +263,7 @@ const Companion = forwardRef(function Companion ({ score,theme='normal'},ref) {
       </motion.div>
       <motion.div animate={legControls}
       drag="y"
+      dragSnapToOrigin
       dragConstraints={{ top: 0, bottom: 25 }}
       dragElastic={0.4}
       onDragEnd={(e, info) => {if (info.offset.y>15) handlePull('right');}}
@@ -262,6 +273,7 @@ const Companion = forwardRef(function Companion ({ score,theme='normal'},ref) {
       </motion.div>
       <motion.div animate={legControls}
       drag="y"
+      dragSnapToOrigin
       dragConstraints={{ top: 0, bottom: 25 }}
       dragElastic={0.4}
       onDragEnd={(e, info) => {if (info.offset.y>15) handlePull('left');}}style={{ position: 'absolute', top: 110, left: 40 }}>
