@@ -1,5 +1,8 @@
 import { useState } from 'react'
 import { useGameStore } from '../store/gameStore'
+import { SHELTER_THEMES } from '../utils/shelterTheme'
+import { SHELTER_BY_MOOD } from '../utils/shelterMood'
+import { currencyInfo } from '../data/currencies'
 
 const categories = ['ALL', 'SURVIVAL', 'HEALTH', 'TECH']
 
@@ -22,6 +25,11 @@ function TradingScreen() {
   const credits = useGameStore((state) => state.marketCredits)
   const inventory = useGameStore((state) => state.marketInventory || [])
   const purchaseMarketItem = useGameStore((state) => state.purchaseMarketItem)
+  const currencies = useGameStore((state) => state.currencies)
+  const ownedThemes = useGameStore((state) => state.ownedThemes || ['default'])
+  const equippedTheme = useGameStore((state) => state.equippedTheme || 'default')
+  const buyTheme = useGameStore((state) => state.buyTheme)
+  const equipTheme = useGameStore((state) => state.equipTheme)
   const [category, setCategory] = useState('ALL')
   const [message, setMessage] = useState('')
   const filteredItems = category === 'ALL' ? items : items.filter((item) => item.category === category)
@@ -114,6 +122,81 @@ function TradingScreen() {
               </div>
             </article>
           ))}
+        </section>
+
+        <section aria-label="Shelter themes" className="mt-14 border-t border-white/10 pt-8">
+          <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="mb-2 text-[10px] uppercase tracking-[.3em] text-fuchsia-300">Personalization // 03</p>
+              <h2 className="text-2xl font-bold uppercase tracking-[.12em]">Shelter themes</h2>
+            </div>
+            <div className="flex flex-wrap gap-2" aria-label="Theme currency balances">
+              {Object.entries(currencyInfo).map(([currency, info]) => (
+                <span key={currency} className="border border-white/10 bg-black/30 px-2.5 py-1.5 text-[10px] text-gray-300">
+                  {info.icon} {currencies[currency] || 0} {info.label}
+                </span>
+              ))}
+            </div>
+          </div>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            {Object.values(SHELTER_THEMES).map((theme) => {
+              const isOwned = ownedThemes.includes(theme.id)
+              const isEquipped = equippedTheme === theme.id
+              const canAfford = Object.entries(theme.cost).every(
+                ([currency, amount]) => (currencies[currency] || 0) >= amount
+              )
+              const costLabel = Object.entries(theme.cost)
+                .map(([currency, amount]) => `${amount} ${currencyInfo[currency]?.label || currency}`)
+                .join(' + ')
+
+              return (
+                <article key={theme.id} className="flex min-h-[240px] flex-col border border-white/10 bg-gradient-to-br from-[#0f141f] to-[#05080d] p-4">
+                  <div className="relative h-28 overflow-hidden border border-white/10 bg-black/40">
+                    <img
+                      src={SHELTER_BY_MOOD.Content.image}
+                      alt=""
+                      aria-hidden="true"
+                      className="h-full w-full object-cover"
+                      style={{ filter: theme.filter }}
+                    />
+                    <span className="absolute bottom-2 left-2 bg-black/70 px-2 py-1 text-[9px] uppercase tracking-widest text-white">
+                      {theme.name}
+                    </span>
+                  </div>
+                  <div className="mt-auto flex items-end justify-between gap-3 pt-4">
+                    <div>
+                      <h3 className="text-sm font-semibold">{theme.name}</h3>
+                      <p className="mt-1 text-[10px] text-gray-400">
+                        {isOwned ? 'Owned' : costLabel || 'No cost'}
+                      </p>
+                    </div>
+                    {isOwned ? (
+                      <button
+                        type="button"
+                        onClick={() => equipTheme(theme.id)}
+                        disabled={isEquipped}
+                        className="min-w-24 border border-cyan-300 px-3 py-2 text-[9px] font-bold uppercase tracking-widest text-cyan-200 transition-colors hover:bg-cyan-300 hover:text-black disabled:cursor-default disabled:border-emerald-400/50 disabled:text-emerald-300"
+                      >
+                        {isEquipped ? 'Equipped' : 'Equip'}
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const purchased = buyTheme(theme)
+                          setMessage(purchased ? `${theme.name.toUpperCase()} ACQUIRED` : 'NOT ENOUGH CURRENCY')
+                        }}
+                        disabled={!canAfford}
+                        className="min-w-24 border border-fuchsia-300 px-3 py-2 text-[9px] font-bold uppercase tracking-widest text-fuchsia-200 transition-colors hover:bg-fuchsia-300 hover:text-black disabled:cursor-not-allowed disabled:opacity-40"
+                      >
+                        Buy
+                      </button>
+                    )}
+                  </div>
+                </article>
+              )
+            })}
+          </div>
         </section>
 
         <section className="mt-14 border-t border-white/10 pt-8">

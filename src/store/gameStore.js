@@ -36,6 +36,11 @@ export const useGameStore = create(
         shards: 0,
       },
 
+      playerName: null,
+      companionName: 'Companion',
+      loginCount: 0,
+      ownedThemes: ['default'],
+      equippedTheme: 'default',
       marketCredits: 1000,
       marketInventory: [],
 
@@ -69,6 +74,10 @@ export const useGameStore = create(
       getAllMissions: () => {
         return [...builtInMissions, ...get().customMissions]
       },
+      setPlayerName: (name) =>
+        set((state) => ({ playerName: name, loginCount: (state.loginCount || 0) + 1 })),
+      setCompanionName: (name) => set({ companionName: name }),
+      logout: () => set({ playerName: null }),
 
       // ---------- DAY ROLLOVER ----------
       // Compares the game's day with the real day. If they differ, archive the old
@@ -140,6 +149,42 @@ export const useGameStore = create(
 
         return purchased
       },
+
+      buyTheme: (theme) => {
+        let purchased = false
+
+        set((state) => {
+          const ownedThemes = state.ownedThemes || ['default']
+          if (ownedThemes.includes(theme.id)) return state
+
+          const cost = Object.entries(theme.cost || {})
+          const canAfford = cost.every(
+            ([currency, amount]) => (state.currencies[currency] || 0) >= amount
+          )
+          if (!canAfford) return state
+
+          purchased = true
+          return {
+            ownedThemes: [...ownedThemes, theme.id],
+            currencies: cost.reduce(
+              (currencies, [currency, amount]) => ({
+                ...currencies,
+                [currency]: currencies[currency] - amount,
+              }),
+              { ...state.currencies }
+            ),
+          }
+        })
+
+        return purchased
+      },
+
+      equipTheme: (themeId) =>
+        set((state) =>
+          (state.ownedThemes || ['default']).includes(themeId)
+            ? { equippedTheme: themeId }
+            : state
+        ),
 
       // Pays a mission's reward. Custom missions are capped; built-in ones are not.
       // Returns the amount actually paid (can be 0 if the daily cap is used up).
@@ -335,6 +380,8 @@ export const useGameStore = create(
       resetGame: () =>
         set({
           currencies: { coolant: 0, cells: 0, shards: 0 },
+          ownedThemes: ['default'],
+          equippedTheme: 'default',
           marketCredits: 1000,
           marketInventory: [],
           missionProgress: {

@@ -1,11 +1,14 @@
 import { motion } from 'framer-motion'
 import { useGameStore, getMoodFromWellbeing } from '../store/gameStore'
 import { SHELTER_BY_MOOD } from '../utils/shelterMood'
+import { SHELTER_THEMES } from '../utils/shelterTheme'
 
 function ShelterScreen() {
   const wellbeing = useGameStore((state) => state.getWellbeing())
+  const equippedThemeId = useGameStore((state) => state.equippedTheme || 'default')
   const mood = getMoodFromWellbeing(wellbeing)
   const shelter = SHELTER_BY_MOOD[mood]
+  const theme = SHELTER_THEMES[equippedThemeId] || SHELTER_THEMES.default
 
   return (
     <div className="relative h-[calc(100svh-4rem)] min-h-[320px] overflow-hidden bg-[#05070b]">
@@ -17,7 +20,8 @@ function ShelterScreen() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 0.38 }}
         transition={{ duration: 0.6 }}
-        className="absolute inset-0 h-full w-full scale-110 object-cover blur-xl"
+        className="absolute inset-0 h-full w-full scale-110 object-cover"
+        style={{ filter: theme.filter === 'none' ? 'blur(24px)' : `blur(24px) ${theme.filter}` }}
       />
 
       <motion.img
@@ -28,6 +32,7 @@ function ShelterScreen() {
         animate={{ opacity: 1 }}
         transition={{ duration: 0.6 }}
         className="absolute inset-0 h-full w-full object-contain"
+        style={{ filter: theme.filter }}
       />
 
       <div className="absolute inset-x-0 top-0 h-20 bg-gradient-to-b from-black/75 to-transparent" />
