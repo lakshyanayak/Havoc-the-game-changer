@@ -872,6 +872,8 @@ export const useGameStore = create(
           currencies: { coolant: 0, cells: 0, shards: 0 },
           ownedThemes: ['default'],
           equippedTheme: 'default',
+          ownedThemes: ['default'],
+          equippedTheme: 'default',
           marketCredits: 1000,
           marketInventory: [],
           missionProgress: {
@@ -930,6 +932,8 @@ export const useGameStore = create(
           customMissions: [],
 
           customEarnedToday: 0,
+          unlockedCompanionThemes: [],
+          equippedCompanionTheme: null,
           unlockedCompanionThemes: [],
           equippedCompanionTheme: null,
         }),

@@ -27,7 +27,7 @@ function ManualTargetInput({ mission, effectiveTarget, onSetTarget }) {
   )
 }
 
-function MissionsScreen() {
+function MissionsScreen({ onPlayWelcome }) {
   const missionProgress = useGameStore((state) => state.missionProgress)
   const logout = useGameStore((state) => state.logout)
   const companionName = useGameStore((state) => state.companionName || 'Companion')
@@ -377,6 +377,23 @@ function MissionsScreen() {
           ↺ Reset Game
         </button>
       </div>
+
+      <section className="max-w-md mx-auto mt-8 border-t border-white/10 pt-4">
+        <h2 className="text-xs uppercase tracking-widest text-gray-400">Events</h2>
+        <button
+          type="button"
+          onClick={onPlayWelcome}
+          className="mt-2 flex w-full items-center justify-between border border-white/10 bg-white/[0.03] px-3 py-2 text-left text-sm transition-colors hover:border-cyan-400/40"
+        >
+          <span>HAVOC-welcome</span>
+          <span
+            className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border border-violet-300/20 bg-[#111a3a] text-violet-300"
+            aria-hidden="true"
+          >
+            ▶
+          </span>
+        </button>
+      </section>
     </div>
   )
 }
