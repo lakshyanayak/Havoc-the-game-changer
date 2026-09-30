@@ -3,7 +3,6 @@ import { motion } from 'framer-motion'
 import Companion from '../components/Companion'
 import { useGameStore, getMoodFromWellbeing } from '../store/gameStore'
 import { SHELTER_BY_MOOD } from '../utils/shelterMood'
-window.useGameStore = useGameStore;
 function CompanionScreen() {
   const wellbeing = useGameStore((state) => state.getWellbeing())
   const mood = getMoodFromWellbeing(wellbeing)
