@@ -84,12 +84,7 @@ function App() {
         <div className="min-h-screen bg-black">
           <div className="relative pb-16">
             {activeTab === 'shelter' && <ShelterScreen />}
-            {activeTab === 'companion' && (
-              <>
-                <ShelterScreen />
-                <CompanionScreen />
-              </>
-            )}
+            {activeTab === 'companion' && <CompanionScreen />}
             {activeTab === 'missions' && (
               <MissionsScreen onPlayWelcome={() => setReplayIntro(true)} />
             )}
