@@ -97,7 +97,12 @@ function App() {
 
   return (
     <>
-      <audio ref={musicRef} src="/background-music.mp3" loop preload="auto" />
+      <audio
+        ref={musicRef}
+        src={`${import.meta.env.BASE_URL}background-music.mp3`}
+        loop
+        preload="auto"
+      />
       {showIntro ? (
         <IntroScreen onFinish={handleIntroFinish} />
       ) : !playerName ? (

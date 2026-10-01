@@ -3,5 +3,6 @@
    import tailwindcss from '@tailwindcss/vite'
 
    export default defineConfig({
+    base: '/Havoc-the-game-changer/',
      plugins: [react(), tailwindcss()],
    })

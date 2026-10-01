@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react'
 
-const VIDEO_SRC = '/intro-landscape.mp4'
+const VIDEO_SRC = `${import.meta.env.BASE_URL}intro-landscape.mp4`
 
 function IntroScreen({ onFinish }) {
   const [isMuted, setIsMuted] = useState(true)
