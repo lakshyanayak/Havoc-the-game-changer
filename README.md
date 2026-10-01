@@ -214,7 +214,7 @@ This repository was built by a 4-person team for ASYNC'26 under a divided-owners
 
 ### License
 
-
+MIT - see [LICENSE](./LICENSE)
 
 ---
 
