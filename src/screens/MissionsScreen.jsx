@@ -7,6 +7,31 @@ import { currencyInfo } from '../data/currencies'
 import { CUSTOM_DAILY_CAP } from '../data/rules'
 import { useDaySync } from '../utils/useDaySync'
 import { singularize } from '../utils/singularize'
+import {
+  CoolantIcon,
+  CellsIcon,
+  ShardsIcon,
+  StreakIcon,
+  DaysLoggedIcon,
+  ExerciseIcon,
+  SleepIcon,
+  CustomMissionIcon,
+} from '../components/icons'
+
+// Maps a currency key to its matching neon icon component
+const CURRENCY_ICONS = {
+  coolant: CoolantIcon,
+  cells: CellsIcon,
+  shards: ShardsIcon,
+}
+
+// Maps a built-in mission id to its matching neon icon component.
+// Custom missions keep their emoji since they're user-chosen.
+const MISSION_ICONS = {
+  water: CoolantIcon,
+  exercise: ExerciseIcon,
+  sleep: SleepIcon,
+}
 
 function ManualTargetInput({ mission, effectiveTarget, onSetTarget }) {
   const [value, setValue] = useState(effectiveTarget)
@@ -29,8 +54,6 @@ function ManualTargetInput({ mission, effectiveTarget, onSetTarget }) {
 
 function MissionsScreen({ onPlayWelcome, onLogout }) {
   const missionProgress = useGameStore((state) => state.missionProgress)
-  const companionName = useGameStore((state) => state.companionName || 'Companion')
-  const setCompanionName = useGameStore((state) => state.setCompanionName)
   const incrementMission = useGameStore((state) => state.incrementMission)
   const currencies = useGameStore((state) => state.currencies)
   const getWellbeing = useGameStore((state) => state.getWellbeing)
@@ -46,13 +69,12 @@ function MissionsScreen({ onPlayWelcome, onLogout }) {
   const customEarnedToday = useGameStore((state) => state.customEarnedToday) || 0
   const history = useGameStore((state) => state.history) || {}
 
-  // Automatically resets missions when a new real day starts
   useDaySync()
 
   const [showAddForm, setShowAddForm] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
   const [toast, setToast] = useState(null)
-  const [toastType, setToastType] = useState('reward') // 'reward' or 'warning'
+  const [toastType, setToastType] = useState('reward')
   const lastClickTimeRef = useRef({})
 
   const wellbeing = getWellbeing()
@@ -85,14 +107,11 @@ function MissionsScreen({ onPlayWelcome, onLogout }) {
     setTimeout(() => setToast(null), 3000)
   }
 
-  // Returns true if this mission's button is being clicked suspiciously fast
   function isClickingTooFast(missionId) {
     const now = Date.now()
     const lastTime = lastClickTimeRef.current[missionId] || 0
     const gap = now - lastTime
-
     lastClickTimeRef.current[missionId] = now
-
     return gap < 400
   }
 
@@ -133,36 +152,34 @@ function MissionsScreen({ onPlayWelcome, onLogout }) {
         </div>
       )}
 
-      <div className="relative mx-auto mb-3 flex max-w-md justify-end">
+      <div className="relative mx-auto mb-4 flex max-w-md justify-end">
         <button
           type="button"
-          aria-label="Settings"
           aria-expanded={showSettings}
           aria-controls="missions-settings-menu"
           onClick={() => setShowSettings((isOpen) => !isOpen)}
-          className="flex h-9 w-9 items-center justify-center border border-white/15 bg-white/5 text-lg text-gray-300 transition-colors hover:border-cyan-400/50 hover:text-cyan-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-300"
+          className="border border-white/15 bg-white/5 px-3 py-1.5 text-xs text-gray-300 transition-colors hover:border-cyan-400/50 hover:text-cyan-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-300"
         >
-          ⚙
+          Options
         </button>
         {showSettings && (
           <div
             id="missions-settings-menu"
-            className="absolute right-0 top-10 z-30 min-w-48 border border-white/15 bg-[#11111d] p-2 shadow-lg"
+            className="absolute right-0 top-full z-30 mt-2 min-w-44 border border-white/15 bg-[#11111d] p-1 shadow-lg"
           >
-            <label className="block px-2 py-1">
-              <span className="text-[10px] uppercase tracking-widest text-gray-400">Companion name</span>
-              <input
-                type="text"
-                value={companionName}
-                onChange={(event) => setCompanionName(event.target.value)}
-                maxLength={18}
-                aria-label="Companion name"
-                className="mt-1 w-full border border-white/15 bg-black/50 px-2 py-1.5 text-sm text-white outline-none focus:border-cyan-300"
-              />
-            </label>
             <button
               type="button"
-              onClick={onLogout}
+              onClick={() => {
+                setShowSettings(false)
+                onPlayWelcome?.()
+              }}
+              className="w-full px-3 py-2 text-left text-sm text-gray-200 transition-colors hover:bg-white/10 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-300"
+            >
+              Replay intro video
+            </button>
+            <button
+              type="button"
+              onClick={() => onLogout?.()}
               className="w-full px-3 py-2 text-left text-sm text-gray-200 transition-colors hover:bg-white/10 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-300"
             >
               Log out
@@ -187,20 +204,29 @@ function MissionsScreen({ onPlayWelcome, onLogout }) {
 
       {/* Currency + streak + days logged bar */}
       <div className="flex justify-center gap-2 mb-6 text-sm flex-wrap">
-        {currencyNames.map((name) => (
-          <span
-            key={name}
-            className="bg-white/5 backdrop-blur border border-purple-500/40 rounded-full px-3.5 py-1 font-medium shadow-[0_0_10px_rgba(168,85,247,0.15)]"
-          >
-            {currencyInfo[name]?.icon || '🪙'} {currencies[name]}{' '}
-            <span className="text-purple-300">{currencyInfo[name]?.label || name}</span>
-          </span>
-        ))}
-        <span className="bg-white/5 backdrop-blur border border-orange-500/40 rounded-full px-3.5 py-1 font-medium shadow-[0_0_10px_rgba(249,115,22,0.15)]">
-          🔥 {streak.current} day{streak.current === 1 ? '' : 's'}
+        {currencyNames.map((name) => {
+          const CurrencyIcon = CURRENCY_ICONS[name]
+          return (
+            <span
+              key={name}
+              className="flex items-center gap-1.5 bg-white/5 backdrop-blur border border-purple-500/40 rounded-full px-3.5 py-1 font-medium shadow-[0_0_10px_rgba(168,85,247,0.15)]"
+            >
+              {CurrencyIcon ? (
+                <CurrencyIcon style={{ width: '1rem', height: '1rem' }} />
+              ) : (
+                <span>🪙</span>
+              )}
+              {currencies[name]} <span className="text-purple-300">{currencyInfo[name]?.label || name}</span>
+            </span>
+          )
+        })}
+        <span className="flex items-center gap-1.5 bg-white/5 backdrop-blur border border-orange-500/40 rounded-full px-3.5 py-1 font-medium shadow-[0_0_10px_rgba(249,115,22,0.15)]">
+          <StreakIcon style={{ width: '1rem', height: '1rem' }} />
+          {streak.current} day{streak.current === 1 ? '' : 's'}
         </span>
-        <span className="bg-white/5 backdrop-blur border border-cyan-400/40 rounded-full px-3.5 py-1 font-medium shadow-[0_0_10px_rgba(34,211,238,0.2)]">
-          📅 {daysLogged} day{daysLogged === 1 ? '' : 's'} logged
+        <span className="flex items-center gap-1.5 bg-white/5 backdrop-blur border border-cyan-400/40 rounded-full px-3.5 py-1 font-medium shadow-[0_0_10px_rgba(34,211,238,0.2)]">
+          <DaysLoggedIcon style={{ width: '1rem', height: '1rem' }} />
+          {daysLogged} day{daysLogged === 1 ? '' : 's'} logged
         </span>
       </div>
 
@@ -227,7 +253,6 @@ function MissionsScreen({ onPlayWelcome, onLogout }) {
           const missionMood = getMoodFromWellbeing(score)
           const rewardLabel = currencyInfo[mission.reward.currency]?.label || mission.reward.currency
 
-          // Card description: built-in Exercise keeps its wording, custom timers get a neutral one
           let descriptionText = mission.description
           if (isTimer && !isCustom) {
             descriptionText = `Exercise or meditate for ${effectiveTarget} ${mission.unit}`
@@ -235,8 +260,8 @@ function MissionsScreen({ onPlayWelcome, onLogout }) {
             descriptionText = `${mission.name} for ${effectiveTarget} ${mission.unit}`
           }
 
-          // Button label: custom units are singularized ("pages" -> "page")
           const buttonUnit = isCustom ? singularize(mission.unit) : mission.singularUnit
+          const CardIcon = MISSION_ICONS[mission.id]
 
           return (
             <div
@@ -249,7 +274,11 @@ function MissionsScreen({ onPlayWelcome, onLogout }) {
             >
               <div className="flex items-center justify-between mb-1.5">
                 <div className="flex items-center gap-2.5">
-                  <span className="text-xl leading-none">{mission.icon}</span>
+                  {CardIcon ? (
+                    <CardIcon style={{ width: '1.35rem', height: '1.35rem' }} />
+                  ) : (
+                    <span className="text-xl leading-none">{mission.icon}</span>
+                  )}
                   <h2 className="font-semibold tracking-tight">{mission.name}</h2>
                 </div>
                 {isCustom && (
@@ -344,16 +373,16 @@ function MissionsScreen({ onPlayWelcome, onLogout }) {
       <div className="max-w-md mx-auto mt-5">
         {showAddForm ? (
           <AddMissionForm
-            existingCurrencies={currencyNames}
             onAdd={handleAddMission}
             onCancel={() => setShowAddForm(false)}
           />
         ) : (
           <button
             onClick={() => setShowAddForm(true)}
-            className="w-full border border-dashed border-purple-500/40 text-purple-300/80 rounded-2xl py-3 text-sm font-medium hover:border-purple-400 hover:text-purple-200 hover:bg-white/[0.02] transition-all"
+            className="w-full flex items-center justify-center gap-2 border border-dashed border-purple-500/40 text-purple-300/80 rounded-2xl py-3 text-sm font-medium hover:border-purple-400 hover:text-purple-200 hover:bg-white/[0.02] transition-all"
           >
-            + Add Custom Mission
+            <CustomMissionIcon style={{ width: '1rem', height: '1rem' }} />
+            Add Custom Mission
           </button>
         )}
         <p className="text-center text-xs text-gray-600 mt-2">
@@ -376,23 +405,6 @@ function MissionsScreen({ onPlayWelcome, onLogout }) {
           ↺ Reset Game
         </button>
       </div>
-
-      <section className="max-w-md mx-auto mt-8 border-t border-white/10 pt-4">
-        <h2 className="text-xs uppercase tracking-widest text-gray-400">Events</h2>
-        <button
-          type="button"
-          onClick={onPlayWelcome}
-          className="mt-2 flex w-full items-center justify-between border border-white/10 bg-white/[0.03] px-3 py-2 text-left text-sm transition-colors hover:border-cyan-400/40"
-        >
-          <span>HAVOC-welcome</span>
-          <span
-            className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border border-violet-300/20 bg-[#111a3a] text-violet-300"
-            aria-hidden="true"
-          >
-            ▶
-          </span>
-        </button>
-      </section>
     </div>
   )
 }

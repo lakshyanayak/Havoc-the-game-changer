@@ -7,12 +7,20 @@ import ShelterScreen from './screens/ShelterScreen'
 import TradingScreen from './screens/TradingScreen'
 import { useGameStore } from './store/gameStore'
 import { useDaySync } from './utils/useDaySync'
+import {
+  ShelterIcon,
+  CogiIcon,
+  MissionsIcon,
+  TradingIcon,
+  SoundOnIcon,
+  SoundOffIcon,
+} from './components/icons'
 
 const tabs = [
-  { id: 'shelter', label: 'Shelter', icon: '🏚️' },
-  { id: 'companion', label: 'Companion', icon: '🤖' },
-  { id: 'missions', label: 'Missions', icon: '🎯' },
-  { id: 'trading', label: 'Trading', icon: '⚖️' },
+  { id: 'shelter', label: 'Shelter', Icon: ShelterIcon },
+  { id: 'companion', label: 'Companion', Icon: CogiIcon },
+  { id: 'missions', label: 'Missions', Icon: MissionsIcon },
+  { id: 'trading', label: 'Trading', Icon: TradingIcon },
 ]
 
 const INTRO_SEEN_KEY = 'havoc_intro_seen'
@@ -29,7 +37,7 @@ function App() {
   const [activeTab, setActiveTab] = useState('missions')
   const [introSeen, setIntroSeen] = useState(getIntroSeen)
   const [replayIntro, setReplayIntro] = useState(
-    () => !useGameStore.getState().playerName,
+    () => !useGameStore.getState().playerName
   )
   const [musicEnabled, setMusicEnabled] = useState(false)
   const musicRef = useRef(null)
@@ -60,7 +68,8 @@ function App() {
       return
     }
 
-    audio.play()
+    audio
+      .play()
       .then(() => setMusicEnabled(true))
       .catch(() => setMusicEnabled(false))
   }
@@ -109,23 +118,24 @@ function App() {
             <nav className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md z-40 flex bg-black/85 backdrop-blur border-t border-white/10">
               {tabs.map((tab) => {
                 const active = activeTab === tab.id
+                const Icon = tab.Icon
                 return (
                   <button
                     key={tab.id}
                     type="button"
                     aria-pressed={active}
                     onClick={() => setActiveTab(tab.id)}
-                    className={`flex-1 py-2.5 flex flex-col items-center gap-0.5 text-xs font-medium transition-colors ${
-                      active ? 'text-cyan-300' : 'text-gray-500 hover:text-gray-300'
+                    className={`flex-1 py-2.5 flex flex-col items-center gap-0.5 text-xs font-medium transition-all ${
+                      active ? 'text-cyan-300 opacity-100' : 'text-gray-500 opacity-60 hover:opacity-90'
                     }`}
                   >
-                    <span
-                      className={`text-lg leading-none ${
-                        active ? 'drop-shadow-[0_0_6px_rgba(34,211,238,0.8)]' : ''
-                      }`}
-                    >
-                      {tab.icon}
-                    </span>
+                    <Icon
+                      style={{
+                        width: '1.125rem',
+                        height: '1.125rem',
+                        filter: active ? 'drop-shadow(0 0 6px currentColor)' : 'none',
+                      }}
+                    />
                     <span className="max-w-full truncate px-1">
                       {tab.id === 'companion' ? companionName : tab.label}
                     </span>
@@ -140,9 +150,11 @@ function App() {
                 title={musicEnabled ? 'Mute music' : 'Play music'}
                 className="w-14 shrink-0 py-2.5 flex flex-col items-center gap-0.5 text-xs font-medium text-gray-300 hover:text-white transition-colors"
               >
-                <span className="text-lg leading-none" aria-hidden="true">
-                  {musicEnabled ? '🔊' : '🔇'}
-                </span>
+                {musicEnabled ? (
+                  <SoundOnIcon style={{ width: '1.125rem', height: '1.125rem' }} />
+                ) : (
+                  <SoundOffIcon style={{ width: '1.125rem', height: '1.125rem' }} />
+                )}
                 Music
               </button>
             </nav>

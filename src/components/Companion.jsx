@@ -182,7 +182,7 @@ const Companion = forwardRef(function Companion ({ score,theme='normal'},ref) {
   const legAngle = legAngles[mood];
   const timeOfDay = getTimeofDay();
   const options = messages[mood][timeOfDay];
-  const message = options[Math.floor(score) % options.length];
+  const message = options[Math.floor(Math.random() * options.length)];
 
   const bodyControls = useAnimation();
   const leftEarControls = useAnimation();

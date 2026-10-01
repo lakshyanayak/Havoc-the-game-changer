@@ -3,15 +3,14 @@ import { getIconForActivity } from '../utils/iconMatcher'
 import { CUSTOM_REWARD_MAX, CUSTOM_DAILY_CAP } from '../data/rules'
 import { currencyInfo } from '../data/currencies'
 
-function AddMissionForm({ existingCurrencies, onAdd, onCancel }) {
+function AddMissionForm({ onAdd, onCancel }) {
   const [name, setName] = useState('')
   const [icon, setIcon] = useState('🎯')
   const [iconManuallySet, setIconManuallySet] = useState(false)
   const [verificationType, setVerificationType] = useState('manual')
   const [target, setTarget] = useState(1)
   const [unit, setUnit] = useState('')
-  const [currencyMode, setCurrencyMode] = useState(existingCurrencies[0] || 'coolant')
-  const [newCurrencyName, setNewCurrencyName] = useState('')
+  const [currency, setCurrency] = useState('coolant')
   const [amount, setAmount] = useState(3)
 
   function handleNameChange(e) {
@@ -34,9 +33,8 @@ function AddMissionForm({ existingCurrencies, onAdd, onCancel }) {
 
   function handleSubmit() {
     const finalUnit = verificationType === 'timer' ? 'minutes' : unit.trim()
-    const currency = currencyMode === '__new__' ? newCurrencyName.trim() : currencyMode
 
-    if (!name.trim() || !finalUnit || !currency || Number(target) <= 0 || Number(amount) <= 0) {
+    if (!name.trim() || !finalUnit || !currencyInfo[currency] || Number(target) <= 0 || Number(amount) <= 0) {
       alert('Please fill in a name, unit, currency, and positive target/reward amount.')
       return
     }
@@ -117,30 +115,17 @@ function AddMissionForm({ existingCurrencies, onAdd, onCancel }) {
         <label>
           Reward currency
           <select
-            value={currencyMode}
-            onChange={(e) => setCurrencyMode(e.target.value)}
+            value={currency}
+            onChange={(e) => setCurrency(e.target.value)}
             className="w-full bg-gray-800 border border-gray-600 rounded px-2 py-1 mt-1"
           >
-            {existingCurrencies.map((c) => (
+            {Object.entries(currencyInfo).map(([c, info]) => (
               <option key={c} value={c}>
-                {currencyInfo[c]?.icon || '🪙'} {currencyInfo[c]?.label || c}
+                {info.icon} {info.label}
               </option>
             ))}
-            <option value="__new__">+ New currency...</option>
           </select>
         </label>
-
-        {currencyMode === '__new__' && (
-          <label>
-            New currency name
-            <input
-              value={newCurrencyName}
-              onChange={(e) => setNewCurrencyName(e.target.value)}
-              placeholder="e.g. crystals"
-              className="w-full bg-gray-800 border border-gray-600 rounded px-2 py-1 mt-1"
-            />
-          </label>
-        )}
 
         <label>
           Reward amount <span className="text-gray-500">(max {CUSTOM_REWARD_MAX})</span>
