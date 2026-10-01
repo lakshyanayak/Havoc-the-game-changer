@@ -27,9 +27,8 @@ function ManualTargetInput({ mission, effectiveTarget, onSetTarget }) {
   )
 }
 
-function MissionsScreen({ onPlayWelcome }) {
+function MissionsScreen({ onPlayWelcome, onLogout }) {
   const missionProgress = useGameStore((state) => state.missionProgress)
-  const logout = useGameStore((state) => state.logout)
   const companionName = useGameStore((state) => state.companionName || 'Companion')
   const setCompanionName = useGameStore((state) => state.setCompanionName)
   const incrementMission = useGameStore((state) => state.incrementMission)
@@ -163,7 +162,7 @@ function MissionsScreen({ onPlayWelcome }) {
             </label>
             <button
               type="button"
-              onClick={logout}
+              onClick={onLogout}
               className="w-full px-3 py-2 text-left text-sm text-gray-200 transition-colors hover:bg-white/10 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-300"
             >
               Log out

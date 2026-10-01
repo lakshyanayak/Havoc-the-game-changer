@@ -28,7 +28,9 @@ function getIntroSeen() {
 function App() {
   const [activeTab, setActiveTab] = useState('missions')
   const [introSeen, setIntroSeen] = useState(getIntroSeen)
-  const [replayIntro, setReplayIntro] = useState(false)
+  const [replayIntro, setReplayIntro] = useState(
+    () => !useGameStore.getState().playerName,
+  )
   const [musicEnabled, setMusicEnabled] = useState(false)
   const musicRef = useRef(null)
   const playerName = useGameStore((state) => state.playerName)
@@ -73,6 +75,17 @@ function App() {
     setReplayIntro(false)
   }
 
+  function handleLogout() {
+    try {
+      localStorage.removeItem(INTRO_SEEN_KEY)
+    } catch {
+      // Keep logout working if storage is unavailable.
+    }
+    setIntroSeen(false)
+    setReplayIntro(true)
+    useGameStore.getState().logout()
+  }
+
   return (
     <>
       <audio ref={musicRef} src="/background-music.mp3" loop preload="auto" />
@@ -86,7 +99,10 @@ function App() {
             {activeTab === 'shelter' && <ShelterScreen />}
             {activeTab === 'companion' && <CompanionScreen />}
             {activeTab === 'missions' && (
-              <MissionsScreen onPlayWelcome={() => setReplayIntro(true)} />
+              <MissionsScreen
+                onPlayWelcome={() => setReplayIntro(true)}
+                onLogout={handleLogout}
+              />
             )}
             {activeTab === 'trading' && <TradingScreen />}
 
